@@ -10,29 +10,74 @@ const casos = [
     
 ]
 
-function findAll() {
-    return [...casos]
+ function findAll() {
+    return  [...casos];
 }
 
-function findCaseById(id){
-    const caso = casos.find(c => c.id === id)
+ function findCaseById(id){
     
-    return caso
+    const caso =  casos.find(c => c.id === id);
+
+    return caso;
 
 }
 
 async function addCases(caseData){
+
+   
     const newCase = {
         id: caseData.id,
         titulo: caseData.titulo,
         descricao: caseData.descricao,
         status: caseData.status,
         agente_id: caseData.agente_id
-    }
+    };
 
-    await casos.push(newCase)
+    await casos.push(newCase);
 
     return newCase;
+
+}
+
+ function updateCase(id, caseData){
+
+    if(!caseData){
+        throw new Error("CaseData invalido")
+    }
+
+    const index = casos.findIndex(c => c.id === id)
+
+
+    casos[index] = {
+        ...casos[index],
+        titulo: caseData.titulo,
+        descricao: caseData.descricao,
+        status: caseData.status,
+    };
+
+    
+ 
+    return casos[index];
+    
+    
+}
+
+function parcialUpdateCase(id,caseData){
+
+    
+
+    const index = casos.findIndex(c =>c.id === id)
+    
+
+    const updateCase = {
+        ...caso[index],
+        ...caseData
+    }
+
+    casos[index] = updateCase;
+
+    return casos[index]
+
 
 }
 
@@ -41,5 +86,7 @@ async function addCases(caseData){
 module.exports = {
     findAll,
     findCaseById,
-    addCases
+    addCases,
+    updateCase,
+    parcialUpdateCase
 }

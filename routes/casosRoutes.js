@@ -9,5 +9,9 @@ routes.get('/casos/:id', casosController.getCasoById)
 
 routes.post('/casos', casosController.createCase)
 
+routes.put('/casos/:id', casosController.updateCase)
+
+routes.patch('/casos/:id', casosController.parcialUpdateCase)
+
 
 module.exports = routes;
