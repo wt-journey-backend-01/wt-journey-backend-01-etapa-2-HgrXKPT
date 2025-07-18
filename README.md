@@ -36,7 +36,7 @@ npm install express
 ```
 Se você estiver recebendo os dados do formulário via POST, precisará de um middleware para interpretar o corpo da requisição. O Express já inclui o express.urlencoded.
 
-**Observação:** não devem ser utilizadas outras dependências além do express.
+**Observação:** Nessa etapa, além das dependências necessárias, você está livre para usar as que preferir
 
 **3. Crie o servidor**
 
@@ -228,7 +228,7 @@ Exemplo:
 
 ### Endpoints
 - `GET /casos?agente_id=uuid` → Lista todos os casos atribuídos à um agente específico.
-- `GET /casos/:caso_id?agente_id=uuid` → Retorna os dados completos do agente responsável por um caso específico.
+- `GET /casos/:caso_id/agente` → Retorna os dados completos do agente responsável por um caso específico.
 - `GET /casos?status=aberto` → Lista todos os casos em aberto.
  - `GET /casos/search?q=homicídio` → Deve retornar todos os casos em que a palavra da query string aparece no **titulo** e/ou **descricao**, ou seja, uma pesquisa full-text
 
