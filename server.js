@@ -1,7 +1,7 @@
 const express = require('express')
 const app = express();
 
-const casosRoute = require('../wt-journey-backend-01-etapa-2-HgrXKPT/routes/casosRoutes')
+const casosRoute = require('./routes/casosRoutes')
 
 require('dotenv').config();
 
