@@ -17,8 +17,12 @@ const casos = [
  function findCaseById(id){
     
     const caso =  casos.find(c => c.id === id);
+    if(!caso){
+        throw new Error("Caso não existente")
+    }
 
     return caso;
+   
 
 }
 
@@ -70,7 +74,7 @@ function parcialUpdateCase(id,caseData){
     
 
     const updateCase = {
-        ...caso[index],
+        ...casos[index],
         ...caseData
     }
 
@@ -81,6 +85,17 @@ function parcialUpdateCase(id,caseData){
 
 }
 
+function deleteCase(id){
+
+    const index = casos.findIndex(c => c.id === id)
+
+    if(!index){
+        throw new Error("Caso não encontrado")
+    }
+    casos.splice(index,1)
+
+}
+
 
 
 module.exports = {
@@ -88,5 +103,6 @@ module.exports = {
     findCaseById,
     addCases,
     updateCase,
-    parcialUpdateCase
+    parcialUpdateCase,
+    deleteCase
 }

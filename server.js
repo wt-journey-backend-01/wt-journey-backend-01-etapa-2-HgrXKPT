@@ -9,7 +9,8 @@ const port = process.env.PORT;
 
 app.use(express.json());
 
-app.use(casosRoute);
+app.use('/casos', casosRoute);
+
 
 app.listen(port, () => {
     console.log(`Servidor do Departamento de Polícia rodando em http://localhost:${port}`);
