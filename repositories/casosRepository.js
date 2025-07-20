@@ -1,3 +1,5 @@
+const {v4: uuidv4} = require(`uuid`);
+
 const casos = [
     {
         id: "f5fb2ad5-22a8-4cb4-90f2-8733517a0d46",
@@ -16,27 +18,17 @@ const casos = [
 
  function findCaseById(id){
     
-    const caso =  casos.find(c => c.id === id);
-    if(!caso){
-        throw new Error("Caso não existente")
-    }
-
-    return caso;
+    return casos.find(c => c.id === id);
    
 
 }
 
-function addCases(caseData){
+function createCases(caseData){
 
-   
-    const newCase = {
-        id: caseData.id,
-        titulo: caseData.titulo,
-        descricao: caseData.descricao,
-        status: caseData.status,
-        agente_id: caseData.agente_id
-    };
-
+     const newCase= {
+        id: uuidv4(),
+        ...caseData
+     }
     casos.push(newCase);
 
     return newCase;
@@ -45,54 +37,26 @@ function addCases(caseData){
 
  function updateCase(id, caseData){
 
-    if(!caseData){
-        throw new Error("CaseData invalido")
-    }
-
     const index = casos.findIndex(c => c.id === id)
-
+    if(index === -1)return null
 
     casos[index] = {
         ...casos[index],
-        titulo: caseData.titulo,
-        descricao: caseData.descricao,
-        status: caseData.status,
+        ...caseData
     };
 
-    
- 
     return casos[index];
     
     
 }
-
-function parcialUpdateCase(id,caseData){
-
-    
-
-    const index = casos.findIndex(c =>c.id === id)
-    
-
-    const updateCase = {
-        ...casos[index],
-        ...caseData
-    }
-
-    casos[index] = updateCase;
-
-    return casos[index]
-
-
-}
-
 function deleteCase(id){
 
     const index = casos.findIndex(c => c.id === id)
 
-    if(index < 0){
-        throw new Error("Caso não encontrado")
-    }
-    casos.splice(index,1)
+    if(index === -1)return null
+
+    const removed = casos.splice(index,1)
+    return removed[0]
 
 }
 
@@ -101,8 +65,7 @@ function deleteCase(id){
 module.exports = {
     findAll,
     findCaseById,
-    addCases,
+    createCases,
     updateCase,
-    parcialUpdateCase,
     deleteCase
 }

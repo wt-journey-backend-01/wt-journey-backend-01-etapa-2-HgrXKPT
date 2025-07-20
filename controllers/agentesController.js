@@ -1,196 +1,101 @@
-const agenteRepository = require('../repositories/agentesRepository')
-const { v4: uuidv4 } = require('uuid');
-const { validate: isUuid } = require('uuid');
-const { validateDate } = require('../utils/validators'); // Importe a função
+const agentesRepository = require('../repositories/agentesRepository')
 
 function findAll(req, res){
-    const agentes = agenteRepository.findAll()
+    const agentes = agentesRepository.findAll()
     res.status(200).json(agentes)
 }
 
-async function findById(req,res){
+function findById(req,res){
     const {id} = req.params;
-    
-     if(!id){
-              return  res.status(400).json({
-                        "mensagem": "Id não fornecido"
-                })
-        }
-        
-
-        if(!isUuid(id)){
-              return  res.status(400).json({
-                        "mensagem" : "id não é um UUID válido"
-                })
-        }
-
-
-        try{
-            const agente = await agenteRepository.findAgentById(id)
-            if(!agente){
-                return res.status(404).json({
-                mensagem: "Agente não encontrado"
-            });
-            }
-
-        res.status(200).json(agente)
-        }catch(Error){
-            return res.status(404).json({
-                mensagem: "Agente não encontrado"
-            });
-        }
-        
-
-
-}
-async function addAgente(req,res){
-    const {id: _, nome, dataDeIncorporacao, cargo} = req.body
-
-    if (!nome || nome.trim() === '') {
-    return res.status(400).json({ mensagem: "Nome é obrigatório e não pode ser vazio" });
-    }
-    //
-    if(!validateDate(dataDeIncorporacao) || dataDeIncorporacao === ''){
-        return res.status(400).json({
-            mensagem: "Data de incorporação inválida ou vazia. Use o formato YYYY-MM-DD e certifique-se de que não é uma data futura"
-        });
-    }
-
-    if(!cargo || cargo.trim() === ''){
-        return res.status(400).json({ mensagem: "Cargo é obrigatório e não pode ser vazio" });
-    }
-    try{
-        const newAgent = {
-        id: uuidv4(),
-        nome,
-        dataDeIncorporacao,
-        cargo,
-        status
-    }
-
-    await agenteRepository.addAgents(newAgent)
-    res.status(201).json(newAgent)
-    }catch(Error){
-         console.error('Erro ao adicionar agente:', error);
-        res.status(500).json({ mensagem: "Erro interno no servidor" });
-    }
-    
-
-}
-
-async function updateAgent(req,res){
-    const {id} = req.params;
-    const {id: _, nome, dataDeIncorporacao, cargo } = req.body
-
-    if(!isUuid(id)){
-        return res.status(400).json({
-            mensagem: "ID inválido"
+    const agente = agentesRepository.findAgentById(id);
+    if(!agente){
+        res.status(404).json(
+                    {
+        status: 404,
+        message: "Parâmetros inválidos",
+        errors: {
+            "id" : "O id enviado é invalido' "
+        }     
         })
     }
 
-    if (!nome || nome.trim() === '') {
-    return res.status(400).json({ mensagem: "Nome é obrigatório e não pode ser vazio" });
-    }
-    //
-    if(!validateDate(dataDeIncorporacao) || !dataDeIncorporacao === ''){
-        return res.status(400).json({
-            mensagem: "Data de incorporação inválida ou vazia. Use o formato YYYY-MM-DD e certifique-se de que não é uma data futura"
-        });
-    }
-
-    if(!cargo || cargo.trim() === ''){
-        return res.status(400).json({ mensagem: "Cargo é obrigatório e não pode ser vazio" });
-    }
+    res.status(200).json(agente)
     
-    try {
-        // Verifica se o agente existe
-        const existingAgent = await agenteRepository.findAgentById(id);
-        if (!existingAgent) {
-            return res.status(404).json({
-                mensagem: "Agente não encontrado"
-            });
-        }
+        
+}
+function addAgente(req,res){
+     const {nome, dataDeIncorporacao, cargo} = req.body;
 
-        const updatedAgent = {
-            nome,
-            dataDeIncorporacao,
-            cargo,
-            status
-        };
-
-        await agenteRepository.updateAgents(id,updatedAgent);
-        res.status(204).send();
-    } catch (error) {
-        console.error('Erro ao deletar agente:', error);
-        res.status(500).json({ mensagem: "Erro interno no servidor" });
+     if (!nome || !dataDeIncorporacao || !cargo){
+        return res.status(400).json({
+            status: 400,
+            message: `Parâmetros inválidos`,
+            errors: {
+                nome: !nome ? mensagemErro : undefined,
+                dataDeIncorporacao: !dataDeIncorporacao ? mensagemErro : undefined,
+                cargo: !cargo ? mensagemErro : undefined,
+            },
+        });
     }
+
+    const newAgent={
+        nome,
+        dataDeIncorporacao,
+        cargo
+    }
+    const agent = agentesRepository.createAgent(newAgent)
+    res.status(201).json(agent)
+
 }
 
-async function partialUpdate(req,res){
+ function updateAgent(req,res){
+
+     const {id} = req.params;
+    const newAgent = req.body;
+
+    const updated = agentesRepository.updateAgents(id, newAgent)
+
+    if (!updated){
+        return res.status(404).json({message:`Agente não encontrado`});
+    }
+
+    res.status(200).json(updated);
+   
+}
+
+function partialUpdate(req,res){
+
+     const {id} = req.params;
+    const fields = req.body;
+
+    const updated = agentesRepository.updateAgents(id, fields)
+
+    if (!updated){
+        return res.status(404).json({message:`Agente não encontrado`});
+    }
+
+    res.status(200).json(updated);
+
+ 
+}
+
+function deleteAgent(req,res) {
     const {id} = req.params;
-    const{id: _, ...agente} = req.body
+    const removed = agentesRepository.deleteAgent(id)
 
-     if (!isUuid(id)) {
-        return res.status(400).json({
-            mensagem: "ID inválido"
-        });
+    if(!removed){
+        res.status(404).json(
+                    {
+        status: 404,
+        message: "Parâmetros inválidos",
+        errors: {
+            "id" : "O id enviado é invalido' "
+        }     
+        })
     }
 
-    if (agente.dataDeIncorporacao === '' || !validateDate(agente.dataDeIncorporacao)) {
-        return res.status(400).json({
-            mensagem: "Data de incorporação inválida ou vazia. Use o formato YYYY-MM-DD e certifique-se de que não é uma data futura"
-        });
-    }
-
-    try {
-        // Verifica se o agente existe
-        const existingAgent = await agenteRepository.findAgentById(id);
-        if (!existingAgent) {
-            return res.status(404).json({
-                mensagem: "Agente não encontrado"
-            });
-        }
-
-        const newAgent = {
-            ...existingAgent,
-            ...agente
-        };
-
-        await agenteRepository.partialUpdateAgents(id, agente);
-        res.status(200).json(newAgent);
-
-
-    } catch (error) {
-        console.error('Erro ao atualizar parcialmente agente:', error);
-        res.status(500).json({ mensagem: "Erro interno no servidor" });
-    }
-}
-
-async function deleteAgent(req,res) {
-        const { id } = req.params;
-
-    // Verifica se o ID na URL é válido
-    if (!isUuid(id)) {
-        return res.status(404).json({
-            mensagem: "ID inválido"
-        });
-    }
-
-    try {
-        // Verifica se o agente existe
-        const existingAgent = await agenteRepository.findAgentById(id);
-        if (!existingAgent) {
-            return res.status(404).json({
-                mensagem: "Agente não encontrado"
-            });
-        }
-
-        await agenteRepository.deleteAgent(id);
-        res.status(204).send();
-    } catch (error) {
-        console.error('Erro ao deletar agente:', error);
-        res.status(500).json({ mensagem: "Erro interno no servidor" });
-    }
+    res.status(204).send()
+        
 }
 
 module.exports={
