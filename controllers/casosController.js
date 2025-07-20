@@ -11,14 +11,14 @@ function getAllCasos(req, res) {
 function getCasoById(req, res){
         const {id} = req.params;
         if(!id){
-                res.status(400).json({
+              return  res.status(400).json({
                         "mensagem": "Id não fornecido"
                 })
         }
         try{
 
         if(!isUuid(id)){
-                res.status(400).json({
+              return  res.status(400).json({
                         "mensagem" 
                         : "id não é um UUID válido"
                 })
@@ -28,7 +28,7 @@ function getCasoById(req, res){
 
         res.status(200).json(caso)
         }catch(error){
-                res.status(400).json({
+               return res.status(400).json({
                         "message": "caso não foi encontrado"
                 })
         }
@@ -47,7 +47,7 @@ async function createCase(req,res){
         //verificar se id existe
 
         if(!isUuid(agente_id)){
-                res.status(400).json(
+               return res.status(400).json(
                         {
                                 "mensagem" : "Id do agente invalido"
                         }
@@ -76,7 +76,7 @@ async function updateCase(req, res){
         const{ titulo, descricao, status } = req.body;
         
         if(!isUuid(id)){
-                res.status(400).json({
+               return res.status(400).json({
                         "mensagem" : "Id invalido"
                 })
         }
@@ -102,7 +102,7 @@ async function parcialUpdateCase(req,res){
         const{id} = req.params;
 
         if(!isUuid(id)){
-                res.status(400).json({
+                return res.status(400).json({
                         "message": "id invalido"
                 })
         }
@@ -129,13 +129,13 @@ async function deleteCase(req,res) {
         const {id} = req.params;
 
         if(!id){
-                res.status(400).json({
+                return res.status(400).json({
                         "mensagem" : "Id não enviado"
                 })
         }
 
         if(!isUuid(id)){
-                res.status(400).json({
+                return res.status(400).json({
                         "mensagem" : "Id invalido"
                 })
         }

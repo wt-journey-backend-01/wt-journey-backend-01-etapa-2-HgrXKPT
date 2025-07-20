@@ -89,7 +89,7 @@ function deleteCase(id){
 
     const index = casos.findIndex(c => c.id === id)
 
-    if(!index){
+    if(index < 0){
         throw new Error("Caso não encontrado")
     }
     casos.splice(index,1)
