@@ -1,272 +1,299 @@
 <sup>Esse é um feedback gerado por IA, ele pode conter erros.</sup>
 
-Você tem 7 créditos restantes para usar o sistema de feedback AI.
+Você tem 6 créditos restantes para usar o sistema de feedback AI.
 
 # Feedback para HgrXKPT:
 
-Nota final: **19.7/100**
+Nota final: **32.2/100**
 
-# Feedback para HgrXKPT 🚓✨
+# Feedback para você, HgrXKPT! 🚀👮‍♂️
 
-Olá! Antes de mais nada, quero parabenizar você pelo esforço em construir essa API para o Departamento de Polícia! 🎉 Você já tem uma base muito boa: seu projeto está organizado em pastas, você usou UUIDs para os IDs, implementou os endpoints básicos para `/agentes` e `/casos` e fez uso do Express com middlewares essenciais, como o `express.json()`. Isso mostra que você está no caminho certo! 👏
-
-Além disso, vi que você conseguiu fazer a criação, listagem, busca por ID, atualização (PUT e PATCH) e exclusão para ambos os recursos, o que é ótimo! Também percebe-se que você tentou fazer validações básicas de UUID, o que é um passo importante para manter a integridade da API.
+Olá! Primeiro, quero parabenizá-lo pelo esforço e pelo que já conseguiu implementar no seu projeto da API do Departamento de Polícia. 🎉 Você estruturou seu código com rotas, controladores e repositórios, usou UUIDs para identificação e implementou validações importantes, como a do UUID e da data de incorporação dos agentes. Isso mostra que você está no caminho certo para construir uma API RESTful robusta! 👏
 
 ---
 
-## Vamos juntos explorar os pontos que podem melhorar para deixar sua API mais robusta e alinhada com as melhores práticas? 🕵️‍♂️🔍
+## O que você mandou bem! 🎯
+
+- A estrutura do seu projeto está organizada em pastas `routes/`, `controllers/` e `repositories/`, o que é excelente e segue a arquitetura modular esperada.
+- Você implementou os endpoints principais para `/agentes` e `/casos`, com os métodos HTTP corretos (GET, POST, PUT, PATCH, DELETE).
+- A validação básica de UUID está presente em vários pontos, o que evita erros comuns.
+- Você fez o tratamento de erros com status HTTP adequados em muitos casos (exemplo: 400 para payloads inválidos e 404 para recursos não encontrados).
+- Implementou a criação e listagem de agentes e casos corretamente.
+- A atualização parcial (PATCH) dos agentes e casos também está funcionando bem.
+- A exclusão de agentes e casos está implementada e funcionando.
+- Parabéns também por ter implementado algumas validações de data e tratamento de erros internos com status 500.
+- Você já começou a pensar em validações mais específicas, como o formato da data de incorporação e o uso correto do UUID.
+- Mesmo que os bônus não tenham sido todos alcançados, você já fez um bom trabalho nos filtros simples e na estrutura para expandir sua API futuramente.
 
 ---
 
-## 1. Estrutura do Projeto: Está no caminho certo! 🚀
+## Pontos importantes para melhorar (vamos destravar juntos!) 🔍
 
-Sua estrutura está bem próxima do esperado:
+### 1. Validação e proteção do campo `id` nos agentes e casos
 
-```
-.
-├── controllers/
-│   ├── agentesController.js
-│   └── casosController.js
-├── repositories/
-│   ├── agentesRepository.js
-│   └── casosRepository.js
-├── routes/
-│   ├── agentesRoutes.js
-│   └── casosRoutes.js
-├── server.js
-├── package.json
-```
+Percebi que você está permitindo que o campo `id` seja alterado via PATCH ou PUT, o que não deve acontecer. O `id` é o identificador único e deve ser imutável após a criação.
 
-Faltou apenas a pasta `utils/` com o `errorHandler.js` para centralizar o tratamento de erros, e a pasta `docs/` com o `swagger.js` para documentação, que são recomendadas para projetos mais organizados e escaláveis. Mas isso não impede seu projeto de funcionar, é só uma dica para o futuro!
-
----
-
-## 2. Validação de Dados: O coração da robustez da sua API ❤️🛡️
-
-### O que observei:
-
-- Você está validando se o ID é um UUID, o que é ótimo! Exemplo do `agentesController.js`:
+Por exemplo, no seu controller de agentes:
 
 ```js
-if(!isUuid(id)){
-    return res.status(400).json({
-        "mensagem" : "id não é um UUID válido"
-    })
+async function partialUpdate(req,res){
+    const {id} = req.params;
+    const{id: _, ...agente} = req.body  // Aqui você tenta ignorar o id enviado no corpo, o que é bom
+    // Porém, no updateAgent (PUT), não há essa proteção, e o id pode ser alterado
 }
 ```
 
-- Porém, algumas validações importantes estão faltando ou incompletas, e isso gera problemas graves:
-
-### Pontos para melhorar:
-
-#### a) Validação dos campos obrigatórios e formatos corretos
-
-No método `addAgente`:
+Mas no método `updateAgent` (PUT), você está atualizando o agente sem proteger o `id`:
 
 ```js
-if(!agente.cargo || !agente.nome || !agente.dataDeIncorporacao){
-    throw new Error("Todos os campos devem ser preenchidos")
-}
-```
-
-Aqui você verifica se os campos existem, mas não valida o formato da data (`dataDeIncorporacao`) — por exemplo, se está no formato `YYYY-MM-DD` e se não está no futuro. Isso permite que datas erradas ou inválidas sejam aceitas, o que pode comprometer a qualidade dos dados. Além disso, lançar um erro com `throw new Error()` sem tratamento pode derrubar o servidor. É melhor responder com status 400 e mensagem clara.
-
-**Sugestão:**
-
-- Use uma biblioteca como `moment` ou `date-fns` para validar o formato e a validade da data.
-- Faça a validação e retorne um erro com `res.status(400).json({ mensagem: "Data inválida" })` para que o cliente saiba o que corrigir.
-
-#### b) Impedir alteração do campo `id` em atualizações (PUT e PATCH)
-
-No seu `updateAgent` e `partialUpdate`, não há proteção para que o campo `id` não seja alterado:
-
-```js
-// updateAgent
 const newAgent = {
-    nome: nome,
-    dataDeIncorporacao : dataDeIncorporacao,
-    cargo: cargo
+    nome,
+    dataDeIncorporacao,
+    cargo
 }
-//...
-
-// partialUpdate
-const {id: _, ...agente} = req.body
+await agenteRepository.updateAgents(id,newAgent)
 ```
 
-No `partialUpdate` você até exclui o `id` do corpo, o que é ótimo, mas no `updateAgent` não impede que o usuário envie um `id` diferente no corpo para alterar.
-
-**Por que isso é importante?** O `id` deve ser imutável, pois é a chave única do recurso. Alterar o `id` pode causar inconsistências e bugs.
-
-**Sugestão:** Sempre ignore ou rejeite alterações no campo `id` em atualizações.
-
-#### c) Validação dos campos para casos (`casosController.js`)
-
-No método `createCase`:
+No repositório, você faz:
 
 ```js
-if(!isUuid(agente_id)){
-    return res.status(400).json({
-        "mensagem" : "Id do agente invalido"
-    })
+agentes[index] = {
+    ...agentes[index],
+    ...newAgent
 }
 ```
 
-Aqui você verifica se o `agente_id` é um UUID válido, mas não verifica se o agente realmente existe no sistema. Isso pode permitir a criação de casos vinculados a agentes inexistentes.
+Aqui, como `newAgent` não tem `id`, o id fica intacto, o que é bom. Porém, se no corpo da requisição o `id` vier, você deve garantir que ele seja ignorado, para evitar inconsistências.
 
-Além disso, você não valida se os campos `titulo` e `descricao` estão preenchidos ou se o `status` é válido (apenas "aberto" ou "solucionado" são aceitos).
-
-**Sugestão:**
-
-- Verifique se o agente existe antes de criar o caso, consultando o repositório de agentes.
-- Valide que `titulo` e `descricao` não estejam vazios.
-- Valide que `status` seja apenas `"aberto"` ou `"solucionado"`.
+**Sugestão:** Sempre remova o `id` do corpo da requisição, tanto no PUT quanto no PATCH, para garantir que o `id` não seja alterado.
 
 ---
 
-## 3. Tratamento de Erros: Evite lançar exceções não tratadas ⚠️
+### 2. Validação dos campos obrigatórios e formatos corretos em `casos`
 
-Vi que em alguns métodos você lança erros diretamente, como em `findAgentById` do repositório:
+Você está permitindo criar e atualizar casos sem validar se os campos estão preenchidos corretamente, e também não valida o status.
+
+Por exemplo, no `createCase`:
 
 ```js
-if(!agente){
-    throw new Error("Agente não encontrado")
+const{titulo, descricao, status, agente_id } = req.body;
+
+// Não há validação se titulo e descricao são strings não vazias
+// Também não há validação se status é "aberto" ou "solucionado"
+```
+
+Além disso, você não verifica se o `agente_id` existe de fato no repositório de agentes antes de criar um caso. Isso pode causar inconsistências, pois um caso pode ficar associado a um agente inexistente.
+
+**Sugestão:** Antes de criar um caso, valide:
+
+- `titulo` e `descricao` são strings não vazias
+- `status` é "aberto" ou "solucionado"
+- `agente_id` é um UUID válido e existe no repositório de agentes
+
+Algo assim:
+
+```js
+if (!titulo || titulo.trim() === '') {
+    return res.status(400).json({ mensagem: "Título é obrigatório e não pode ser vazio" });
+}
+if (!descricao || descricao.trim() === '') {
+    return res.status(400).json({ mensagem: "Descrição é obrigatória e não pode ser vazia" });
+}
+if (status !== "aberto" && status !== "solucionado") {
+    return res.status(400).json({ mensagem: "Status deve ser 'aberto' ou 'solucionado'" });
+}
+
+// Verificar se agente existe
+try {
+    await agenteRepository.findAgentById(agente_id);
+} catch (error) {
+    return res.status(404).json({ mensagem: "Agente não encontrado para o agente_id fornecido" });
 }
 ```
 
-E no controller, você chama essa função sem tratamento de erro:
+---
 
-```js
-const agente = await agenteRepository.findAgentById(id)
-res.status(200).json(agente)
-```
+### 3. Tratamento de erros e status HTTP nos métodos PUT, PATCH e DELETE
 
-Se o agente não existir, sua API vai lançar um erro e provavelmente cairá em um erro 500, ao invés de responder com 404 (Not Found).
-
-**Sugestão:**
-
-- Use `try...catch` no controller para capturar erros lançados pelo repositório e responder com status 404 ou 400 conforme o caso.
-- Ou, melhor ainda, modifique o repositório para retornar `null` ou `undefined` quando o item não for encontrado, e faça a verificação no controller.
-
-Exemplo de tratamento no controller:
+- Nos métodos `updateAgent` e `updateCase`, quando o recurso não existe, você não está retornando 404 corretamente. Por exemplo, no `updateAgent`:
 
 ```js
 try {
-    const agente = await agenteRepository.findAgentById(id);
-    if (!agente) {
+    const existingAgent = await agenteRepository.findAgentById(id);
+    if (!existingAgent) {
         return res.status(404).json({ mensagem: "Agente não encontrado" });
     }
-    res.status(200).json(agente);
-} catch (error) {
-    res.status(500).json({ mensagem: "Erro interno no servidor" });
+    // ...
+} catch(Error) {
+    // Aqui você repete a atualização mesmo se deu erro, o que não é correto
+    // Melhor retornar erro 500 ou 404, não continuar
+}
+```
+
+No seu `catch`, você está repetindo a atualização e enviando 200, o que pode mascarar erros.
+
+**Sugestão:** No `catch` de erros, retorne status 500 ou 404 conforme o caso, não repita a operação.
+
+- No método `deleteCase`, você retorna status 200 com mensagem, mas o correto para DELETE é 204 No Content quando a exclusão é bem sucedida.
+
+---
+
+### 4. Uso incorreto do `async` / `await` em métodos que não são assíncronos
+
+Em vários pontos, você usa `await` em funções que não retornam promessas, por exemplo:
+
+```js
+const casos = casosRepository.findAll()  // findAll não é async
+res.status(200).json(casos);
+```
+
+Ou no repositório:
+
+```js
+await casos.push(newCase); // push é síncrono, não precisa de await
+```
+
+Isso não causa erro, mas é desnecessário e pode confundir. Use `async/await` apenas quando a função retorna uma Promise.
+
+---
+
+### 5. Falta de validação do payload nos métodos PUT e PATCH dos casos
+
+Assim como no `createCase`, seus métodos `updateCase` e `parcialUpdateCase` não validam se os dados enviados estão no formato correto, por exemplo, se o `titulo` e `descricao` são strings não vazias, e se o `status` é válido.
+
+---
+
+### 6. Mensagens de erro mais claras e consistentes
+
+Em alguns pontos, as mensagens de erro retornadas são genéricas ou misturam português e inglês:
+
+```js
+return res.status(400).json({
+    "message": "caso não foi encontrado"
+})
+```
+
+Seria melhor manter a consistência no idioma (português, já que o restante está em português) e usar mensagens claras, como:
+
+```js
+return res.status(404).json({
+    mensagem: "Caso não encontrado"
+})
+```
+
+---
+
+### 7. Penalidades que impactam a qualidade da API
+
+- Você permite alterar o `id` do agente via PATCH (mesmo que tente ignorar no corpo, precisa garantir 100%).
+- Você permite criar casos com título ou descrição vazios.
+- Você permite atualizar casos com status inválido (qualquer coisa diferente de "aberto" ou "solucionado").
+- Você permite alterar o `id` do caso via PUT, o que não deve acontecer.
+
+Esses pontos são críticos porque quebram a integridade dos dados na sua API.
+
+---
+
+## Exemplos de correções práticas para você
+
+### Protegendo o campo `id` no PATCH e PUT dos agentes
+
+No controller `updateAgent`:
+
+```js
+async function updateAgent(req, res) {
+    const { id } = req.params;
+    const { id: bodyId, nome, dataDeIncorporacao, cargo } = req.body;
+
+    if (bodyId && bodyId !== id) {
+        return res.status(400).json({ mensagem: "Não é permitido alterar o ID do agente." });
+    }
+
+    // restante validação e atualização...
+}
+```
+
+No `partialUpdate`:
+
+```js
+async function partialUpdate(req, res) {
+    const { id } = req.params;
+    const { id: bodyId, ...agente } = req.body;
+
+    if (bodyId) {
+        return res.status(400).json({ mensagem: "Não é permitido alterar o ID do agente." });
+    }
+
+    // restante...
+}
+```
+
+### Validando campos obrigatórios e status no `createCase`
+
+```js
+async function createCase(req, res) {
+    const { titulo, descricao, status, agente_id } = req.body;
+
+    if (!titulo || titulo.trim() === '') {
+        return res.status(400).json({ mensagem: "Título é obrigatório." });
+    }
+    if (!descricao || descricao.trim() === '') {
+        return res.status(400).json({ mensagem: "Descrição é obrigatória." });
+    }
+    if (status !== "aberto" && status !== "solucionado") {
+        return res.status(400).json({ mensagem: "Status deve ser 'aberto' ou 'solucionado'." });
+    }
+    if (!isUuid(agente_id)) {
+        return res.status(400).json({ mensagem: "ID do agente inválido." });
+    }
+
+    try {
+        await agenteRepository.findAgentById(agente_id);
+    } catch (error) {
+        return res.status(404).json({ mensagem: "Agente não encontrado." });
+    }
+
+    // criação do caso...
 }
 ```
 
 ---
 
-## 4. Status Codes e Respostas HTTP: Ajustes importantes para sua API falar a mesma língua do cliente 📡
+## Recursos para você se aprofundar e melhorar ainda mais! 📚
 
-### a) Resposta no DELETE
-
-No `deleteAgent` você responde assim:
-
-```js
-res.status(204).json({
-    "mensagem": "agente Deletado!!!!"
-})
-```
-
-O status 204 (No Content) não deve ter corpo na resposta. Se quiser enviar mensagem, use status 200 ou 202.
-
-**Sugestão:**
-
-```js
-res.status(204).send();
-```
-
-Ou
-
-```js
-res.status(200).json({ mensagem: "Agente deletado com sucesso" });
-```
-
-### b) Resposta no DELETE de casos
-
-No `deleteCase` você responde com status 200 e mensagem, o que é correto, mas para manter consistência, escolha um padrão para DELETEs.
-
----
-
-## 5. Filtros, Ordenação e Mensagens Customizadas: Bônus que ainda podem ser implementados ✨
-
-Vi que os testes de filtros e mensagens customizadas não estão implementados ainda. Esses recursos são importantes para deixar sua API mais robusta e amigável.
-
-Por exemplo, implementar filtros no endpoint `/casos?status=aberto` para retornar só casos abertos, ou ordenar agentes por data de incorporação.
-
-**Dica:** Você pode acessar `req.query` para pegar os parâmetros de filtro e ordenar os arrays em memória com métodos como `.filter()` e `.sort()`.
-
----
-
-## 6. Pequenos ajustes de nomenclatura para manter a consistência 📝
-
-- No arquivo `routes/agentesRoutes.js`, você nomeou a variável como `agentRoute` no `server.js` (singular), mas a rota é `/agentes` (plural). Recomendo usar nomes consistentes para evitar confusão, por exemplo:
-
-```js
-const agentesRoutes = require('./routes/agentesRoutes');
-app.use('/agentes', agentesRoutes);
-```
-
-- No controller e repositório, mantenha o padrão `agente` ou `agentes` sempre coerente.
-
----
-
-## 7. Recomendações de Aprendizado para você 💡
-
-Para ajudar você a aprimorar esses pontos, recomendo fortemente os seguintes recursos:
-
-- **Validação de dados e tratamento de erros em APIs Node.js/Express:**  
-  https://youtu.be/yNDCRAz7CM8?si=Lh5u3j27j_a4w3A_  
-  (Esse vídeo vai te ajudar a entender como validar dados, evitar lançar erros não tratados e retornar respostas apropriadas para o cliente.)
-
-- **Documentação oficial do Express sobre roteamento:**  
+- Para entender melhor como organizar rotas e controladores no Express:  
   https://expressjs.com/pt-br/guide/routing.html  
-  (Para garantir que você entenda como organizar suas rotas e middlewares corretamente.)
+  (Isso vai ajudar a manter seu código limpo e modular)
 
-- **Manipulação de arrays em JavaScript:**  
+- Para aprender a validar dados e tratar erros com status HTTP corretos:  
+  https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status/400  
+  https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status/404  
+  https://youtu.be/yNDCRAz7CM8?si=Lh5u3j27j_a4w3A_  
+
+- Para aprimorar a manipulação de arrays em memória (como atualizar, buscar e deletar):  
   https://youtu.be/glSgUKA5LjE?si=t9G2NsC8InYAU9cI  
-  (Para implementar filtros e ordenações nos seus arrays de dados em memória.)
 
-- **HTTP Status Codes - MDN:**  
-  - 400 Bad Request: https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status/400  
-  - 404 Not Found: https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status/404  
-  (Entenda quando e como usar esses códigos para deixar sua API comunicando de forma clara com quem a consome.)
+- Para entender melhor o fluxo de requisição e resposta no Express.js:  
+  https://youtu.be/Bn8gcSQH-bc?si=Df4htGoVrV0NR7ri  
 
 ---
 
-## Resumo dos principais pontos para focar agora 🎯
+## Resumo rápido para você focar agora 📝
 
-- [ ] **Validação completa dos dados recebidos:** formatos, campos obrigatórios, valores permitidos (datas, status, etc).  
-- [ ] **Impedir alteração do campo `id` em atualizações (PUT e PATCH).**  
-- [ ] **Tratar erros lançados no repositório para responder com status 404 ou 400 no controller, evitando crashes.**  
-- [ ] **Ajustar respostas HTTP para DELETE (usar status 204 sem corpo ou 200 com mensagem).**  
-- [ ] **Implementar filtros, ordenações e mensagens de erro customizadas para melhorar a API (bônus).**  
-- [ ] **Manter nomenclatura consistente e clara entre arquivos e variáveis.**  
-
----
-
-## Conclusão e incentivo final 🌟
-
-Você já construiu uma base muito sólida para sua API, e com esses ajustes vai conseguir deixá-la muito mais confiável, robusta e profissional! Continue se dedicando, revisando o fluxo dos dados, pensando no cliente que vai consumir sua API e validando tudo com carinho.
-
-Lembre-se que construir APIs é uma jornada de aprendizado constante, e cada erro que você corrige é um passo para se tornar um desenvolvedor ainda melhor. 🚀
-
-Se precisar, volte aos vídeos recomendados, revise seu código com calma e não hesite em testar cada funcionalidade com ferramentas como Postman ou Insomnia para garantir que tudo está funcionando como esperado.
-
-Estou torcendo pelo seu sucesso! 💪👊
+- **Proteja o campo `id` para que nunca possa ser alterado via PUT ou PATCH.**
+- **Valide todos os campos obrigatórios dos casos (título, descrição, status) e agentes, garantindo que não sejam vazios e estejam no formato correto.**
+- **Antes de criar ou atualizar um caso, verifique se o `agente_id` existe no repositório de agentes.**
+- **Garanta que o status dos casos seja sempre "aberto" ou "solucionado".**
+- **Melhore o tratamento de erros para retornar os status 404 ou 400 corretos, e evite repetir operações no bloco `catch`.**
+- **Ajuste os métodos DELETE para retornarem status 204 quando a exclusão for bem sucedida.**
+- **Remova o uso desnecessário de `async` e `await` em funções síncronas para evitar confusão.**
+- **Padronize as mensagens de erro para português e com mensagens claras e amigáveis.**
 
 ---
 
-Se quiser, posso ajudar a revisar algum trecho específico do seu código ou explicar algum conceito que ficou confuso. É só chamar! 😉
+Você está muito perto de ter uma API sólida e bem estruturada! Continue focando nessas melhorias e logo verá seu código mais robusto e confiável. 🚀 Estou aqui torcendo pelo seu sucesso! Se precisar de ajuda para implementar alguma dessas melhorias, me chama que a gente resolve juntos! 😄👊
 
-Abraços e bons códigos! 👨‍💻👩‍💻✨
+Boa codada! 💻✨
 
 > Caso queira tirar uma dúvida específica, entre em contato com o Chapter no nosso [discord](https://discord.gg/DryuHVnz).
 
