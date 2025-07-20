@@ -1,4 +1,5 @@
 const casosRepository = require("../repositories/casosRepository")
+const agenteRepository = require('../repositories/agentesRepository')
 const { v4: uuidv4 } = require('uuid');
 const { validate: isUuid } = require('uuid');
 
@@ -15,15 +16,15 @@ function getCasoById(req, res){
                         "mensagem": "Id não fornecido"
                 })
         }
-        try{
 
         if(!isUuid(id)){
-              return  res.status(400).json({
+              return  res.status(404).json({
                         "mensagem" 
                         : "id não é um UUID válido"
                 })
         }
 
+        try{
         const caso = casosRepository.findCaseById(id)
 
         res.status(200).json(caso)
@@ -38,9 +39,9 @@ function getCasoById(req, res){
 }
 
 
-async function createCase(req,res){
+function createCase(req,res){
 
-        const{titulo, descricao, status, agente_id } = req.body;
+        const{id: _,titulo, descricao, status, agente_id} = req.body;
 
 
         const id_uuid = uuidv4();
@@ -53,6 +54,13 @@ async function createCase(req,res){
                         }
                 )
         }
+
+        try {
+        agenteRepository.findAgentById(agente_id);
+        } catch (error) {
+        return res.status(404).json({ mensagem: "Agente não encontrado" });
+    }
+
         
 
 
@@ -64,7 +72,7 @@ async function createCase(req,res){
                 agente_id: agente_id
         }
 
-       await casosRepository.addCases(newCase);
+        casosRepository.addCases(newCase);
 
         res.status(201).json(newCase);
 }
@@ -73,16 +81,31 @@ async function updateCase(req, res){
 
         const {id} = req.params;
 
-        const{ titulo, descricao, status } = req.body;
+        const{id: _, titulo, descricao, status, agente_id: _ignored} = req.body;
         
         if(!isUuid(id)){
-               return res.status(400).json({
+               return res.status(404).json({
                         "mensagem" : "Id invalido"
                 })
         }
+        if(!titulo || titulo.trim() === ''){
+                res.status(400).json({mensagem: "Formato do titulo incorreto ou vazio"})
+        }
+        if(!descricao || descricao.trim() === ''){
+                res.status(400).json({mensagem: "Formato da descricao incorreto ou vazio"})
+        }
+        if (status !== "aberto" || status !== "solucionado") {
+        return res.status(400).json({ mensagem: "Status deve ser 'aberto' ou 'solucionado'" });
+    }
 
         //verificar se id existe
-        
+        try{
+                casosRepository.findCaseById(id)
+        }catch(Error){
+                res.status(404).json({
+                        mensagem: "Caso não encontrado"
+                })
+        }
 
 
 
@@ -102,7 +125,7 @@ async function parcialUpdateCase(req,res){
         const{id} = req.params;
 
         if(!isUuid(id)){
-                return res.status(400).json({
+                return res.status(404).json({
                         "message": "id invalido"
                 })
         }
@@ -125,7 +148,7 @@ async function parcialUpdateCase(req,res){
 
 }
 
-async function deleteCase(req,res) {
+function deleteCase(req,res) {
         const {id} = req.params;
 
         if(!id){
@@ -135,15 +158,13 @@ async function deleteCase(req,res) {
         }
 
         if(!isUuid(id)){
-                return res.status(400).json({
+                return res.status(404).json({
                         "mensagem" : "Id invalido"
                 })
         }
 
-        await casosRepository.deleteCase(id)
-        res.status(200).json({
-                "mensagem": "Caso deletado"
-        })
+        casosRepository.deleteCase(id)
+        res.status(204).send()
         
 }
 
