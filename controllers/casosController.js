@@ -28,8 +28,8 @@ function getCasoById(req, res){
 
         res.status(200).json(caso)
         }catch(error){
-               return res.status(400).json({
-                        "message": "caso não foi encontrado"
+               return res.status(404).json({
+                        "message": "Caso não foi encontrado"
                 })
         }
         

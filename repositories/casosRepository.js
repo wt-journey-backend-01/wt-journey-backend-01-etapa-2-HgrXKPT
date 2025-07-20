@@ -26,7 +26,7 @@ const casos = [
 
 }
 
-async function addCases(caseData){
+function addCases(caseData){
 
    
     const newCase = {
@@ -37,7 +37,7 @@ async function addCases(caseData){
         agente_id: caseData.agente_id
     };
 
-    await casos.push(newCase);
+    casos.push(newCase);
 
     return newCase;
 
