@@ -157,6 +157,18 @@ function updateCase(req, res) {
         });
     }
 
+    const existingCase = casosRepository.findCaseById(caso_id)
+    if(!existingCase){
+      return res.status(404).json({
+        status: 404,
+        message: "Caso não existe",
+        errors: {
+          caso_id: "O id enviado não corresponde a nenhum caso",
+        },
+    });
+
+    }
+
 
 
     if (!newCase.titulo || !newCase.descricao || !newCase.status || !newCase.agente_id) {
@@ -183,7 +195,7 @@ function updateCase(req, res) {
       status: 404,
       message: "Parâmetros inválidos",
       errors: {
-         caso_id: "O id enviado não corresponde a nenhum caso' ",
+         caso_id: "O id enviado não corresponde a nenhum caso ",
       },
     });
   }
@@ -221,6 +233,14 @@ function parcialUpdateCase(req, res) {
                 message: `Agente responsável não encontrado`,
             });
         }
+    }
+
+    const existingCase = casosRepository.findCaseById(caso_id);
+    if(!existingCase){
+        return res.status(404).json({
+                status: 404,
+                message: `O Caso não foi encontrado`,
+            });
     }
 
   
