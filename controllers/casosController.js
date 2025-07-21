@@ -38,11 +38,9 @@ function getCasoById(req, res) {
     });
   }
 
-  const caso = casosRepository.findCaseById(caso_id);
+  let caso = casosRepository.findCaseById(caso_id);
 
-  if (agente_id) {
-    caso = caso.filter((c) => c.agente_id === agente_id);
-  }
+  
 
     if (!caso) {
         return res.status(404).json({
@@ -53,6 +51,10 @@ function getCasoById(req, res) {
         },
         });
     }
+
+    if (agente_id) {
+    caso = caso.filter((c) => c.agente_id === agente_id);
+  }
 
   res.status(200).json(caso);
 }
@@ -137,6 +139,9 @@ function createCase(req, res) {
 
 function updateCase(req, res) {
   const { caso_id } = req.params;
+
+  const newCase = req.body
+  
   if (!isUuid( caso_id)) {
     return res.status(400).json({
       status: 400,
@@ -145,8 +150,32 @@ function updateCase(req, res) {
     });
   }
 
-  const newCase = req.body;
+   if (newCase.id && newCase.id !== id) {
+        return res.status(400).json({
+            status: 400,
+            message: "Não é permitido alterar o campo 'id'."
+        });
+    }
 
+
+
+    if (!newCase.titulo || !newCase.descricao || !newCase.status ||newCase.agente_id) {
+    return res.status(400).json({
+      status: 400,
+      message: "Dados incorretos",
+      errors: { id: "Um ou mais dados foram enviados incorretamente" },
+    });
+  }
+
+     if (newCase.status !== `aberto` && newCase.status !== `solucionado`) {
+        return res.status(400).json({
+            message: "Status inválido",
+            errors: {
+                status: "Use apenas 'aberto' ou 'solucionado'"
+            }
+        });
+    }
+  
   const updated = casosRepository.updateCase(caso_id, newCase);
 
   if (!updated) {
@@ -164,6 +193,9 @@ function updateCase(req, res) {
 
 function parcialUpdateCase(req, res) {
   const { caso_id } = req.params;
+
+  const fields = req.body;
+
   if (!isUuid( caso_id)) {
     return res.status(400).json({
       status: 400,
@@ -172,7 +204,26 @@ function parcialUpdateCase(req, res) {
     });
   }
 
-  const fields = req.body;
+   if (fields.status && fields.status !== `aberto` && fields.status !== `solucionado`) {
+        return res.status(400).json({
+            message: "Status inválido",
+            errors: {
+                status: "Use apenas 'aberto' ou 'solucionado'"
+            }
+        });
+    }
+
+     if (fields.agente_id) {
+        const agenteExiste = agentesRepository.findAll().some((agente) => agente.id === fields.agente_id);
+        if (!agenteExiste) {
+            return res.status(404).json({
+                status: 404,
+                message: `Agente responsável não encontrado`,
+            });
+        }
+    }
+
+  
 
   const updated = casosRepository.updateCase(caso_id, fields);
 
