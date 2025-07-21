@@ -1,6 +1,9 @@
 const agentesRepository = require("../repositories/agentesRepository");
 const { parseISO, isValid, isFuture } = require("date-fns");
 const { validate: isUuid } = require("uuid");
+const Joi = require('joi');
+
+
 
 function findAll(req, res) {
   const { cargo, sort } = req.query;
@@ -167,7 +170,17 @@ function updateAgent(req, res) {
 }
 
 function partialUpdate(req, res) {
+
+  const partialSchema = Joi.object({
+    nome: Joi.string().trim().min(1).optional(),
+    dataDeIncorporacao: Joi.string().trim().min(1).optional(),
+    cargo: Joi.string().trim().min(1).optional()
+  }).min(1);
+
   const { id } = req.params;
+  const { error, value } = partialSchema.validate(req.body);
+
+
   if (!isUuid(id)) {
     return res.status(400).json({
       status: 400,
@@ -176,7 +189,15 @@ function partialUpdate(req, res) {
     });
   }
 
-  const { nome, dataDeIncorporacao, cargo } = req.body;
+   if (error) {
+    return res.status(400).json({
+      status: 400,
+      message: "Payload incorreto",
+      errors: {
+        id: "O payload está incorreto",
+      },
+    });
+  }
 
   if (req.body.id && req.body.id !== id) {
     return res.status(400).json({
@@ -189,32 +210,19 @@ function partialUpdate(req, res) {
   if (!agente) {
     return res.status(404).json({
       status: 404,
-      message: "Parâmetros inválidos",
+      message: "Agente não encontrado",
       errors: {
         id: "O agente não foi encontrado",
       },
     });
   }
 
-  const fields = {
-    nome: !nome || nome.trim() === "" ? agente.nome : nome.trim(),
-    dataDeIncorporacao:
-      !dataDeIncorporacao || dataDeIncorporacao.trim() === ""
-        ? agente.dataDeIncorporacao
-        : dataDeIncorporacao.trim(),
-    cargo:
-      cargo === undefined || cargo.trim() === "" ? agente.cargo : cargo.trim(),
-  };
+  const fields = {};
+  if (value.nome !== undefined) fields.nome = value.nome;
+  if (value.dataDeIncorporacao !== undefined) fields.dataDeIncorporacao = value.dataDeIncorporacao;
+  if (value.cargo !== undefined) fields.cargo = value.cargo;
 
   const updated = agentesRepository.updateAgents(id, fields);
-
-  if (!updated) {
-    return res.status(404).json({
-      status: 404,
-      message: "Agente não encontrado",
-      errors: { id: "O id do agente fornecido é invalido" },
-    });
-  }
 
   res.status(200).json(updated);
 }
