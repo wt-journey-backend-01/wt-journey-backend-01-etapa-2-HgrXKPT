@@ -108,6 +108,14 @@ function updateAgent(req, res) {
   }
 
   const { nome, dataDeIncorporacao, cargo } = req.body;
+
+  if (req.body.id && req.body.id !== id) {
+    return res.status(400).json({
+      status: 400,
+      message: "Não é permitido alterar o campo 'id'.",
+    });
+  }
+
   if (!nome && !dataDeIncorporacao && !cargo) {
     return res.status(400).json({
       status: 400,
@@ -115,21 +123,23 @@ function updateAgent(req, res) {
       errors: { id: "Um ou mais dados foram enviados incorretamente" },
     });
   }
-  if (nome.trim() === "") {
+
+  if (!nome || nome.trim() === "") {
     return res.status(400).json({
       status: 400,
       message: "Nome incorreto",
       errors: { id: "Nome invalido ou vazio" },
     });
   }
-  if (dataDeIncorporacao.trim() === "") {
+
+  if (!dataDeIncorporacao || dataDeIncorporacao.trim() === "") {
     return res.status(400).json({
       status: 400,
       message: "DataDeIncorporacao incorreto",
       errors: { id: "dataDeIncorporacao invalido ou vazio" },
     });
   }
-  if (cargo.trim() === "") {
+  if (!cargo || cargo.trim() === "") {
     return res.status(400).json({
       status: 400,
       message: "Cargo incorreto",
@@ -167,6 +177,13 @@ function partialUpdate(req, res) {
   }
 
   const { nome, dataDeIncorporacao, cargo } = req.body;
+
+  if (req.body.id && req.body.id !== id) {
+    return res.status(400).json({
+      status: 400,
+      message: "Não é permitido alterar o campo 'id'.",
+    });
+  }
 
   const agente = agentesRepository.findAgentById(id);
 

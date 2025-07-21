@@ -53,7 +53,7 @@ function getCasoById(req, res) {
     }
 
     if (agente_id) {
-    caso = caso.filter((c) => c.agente_id === agente_id);
+    caso = caso.id.filter((c) => c.agente_id === agente_id);
   }
 
   res.status(200).json(caso);
@@ -84,7 +84,7 @@ function getAgenteAssocitateToCase(req, res) {
 
   const agente = agentesRepository.findAgentById(caso.agente_id) 
 
-    res.status(200).send(agente);
+    res.status(200).json(agente);
   }
 
 
@@ -159,7 +159,7 @@ function updateCase(req, res) {
 
 
 
-    if (!newCase.titulo || !newCase.descricao || !newCase.status ||newCase.agente_id) {
+    if (!newCase.titulo || !newCase.descricao || !newCase.status || !newCase.agente_id) {
     return res.status(400).json({
       status: 400,
       message: "Dados incorretos",
