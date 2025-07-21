@@ -30,11 +30,11 @@ function getCasoById(req, res) {
 
   const { caso_id } = req.params;
 
-  if (!isUuid(id)) {
+  if (!isUuid( caso_id)) {
     return res.status(400).json({
       status: 400,
       message: "ID inválido",
-      errors: { id: "O ID deve ser um UUID válido" },
+      errors: {  caso_id: "O ID deve ser um UUID válido" },
     });
   }
 
@@ -45,11 +45,11 @@ function getCasoById(req, res) {
   }
 
     if (!caso) {
-        res.status(404).json({
+        return res.status(404).json({
         status: 404,
         message: "Parâmetros inválidos",
         errors: {
-            id: "O caso não foi encontrado",
+             caso_id: "O caso não foi encontrado",
         },
         });
     }
@@ -60,27 +60,25 @@ function getCasoById(req, res) {
 function getAgenteAssocitateToCase(req, res) {
   const { caso_id } = req.params;
 
-  if (!isUuid(id)) {
+  if (!isUuid( caso_id)) {
     return res.status(400).json({
       status: 400,
       message: "ID inválido",
-      errors: { id: "O ID deve ser um UUID válido" },
+      errors: {  caso_id: "O ID deve ser um UUID válido" },
     });
   }
 
   const caso = casosRepository.findCaseById(caso_id);
 
   if (!caso) {
-    res.status(404).json({
+    return res.status(404).json({
       status: 404,
       message: "Parâmetros inválidos",
       errors: {
-        id: "O caso não foi encontrado",
+         caso_id: "O caso não foi encontrado",
       },
     });
   }
-
-  console.log(caso.agente_id);
 
   const agente = agentesRepository.findAgentById(caso.agente_id) 
 
@@ -116,11 +114,11 @@ function createCase(req, res) {
 
   const existingAgent = agentesRepository.findAgentById(agente_id);
   if (!existingAgent) {
-    res.status(404).json({
+    return res.status(404).json({
       status: 404,
       message: "Parâmetros inválidos",
       errors: {
-        id: "O id enviado é invalido' ",
+        id: "Agente não encontrado",
       },
     });
   }
@@ -131,18 +129,19 @@ function createCase(req, res) {
     status,
     agente_id,
   };
-  casosRepository.createCases(newCase);
+  
+  const createdCase = casosRepository.createCase(newCase)
 
-  res.status(201).json(newCase);
+  res.status(201).json(createdCase);
 }
 
 function updateCase(req, res) {
   const { caso_id } = req.params;
-  if (!isUuid(id)) {
+  if (!isUuid( caso_id)) {
     return res.status(400).json({
       status: 400,
       message: "ID inválido",
-      errors: { id: "O ID deve ser um UUID válido" },
+      errors: {  caso_id: "O ID deve ser um UUID válido" },
     });
   }
 
@@ -151,11 +150,11 @@ function updateCase(req, res) {
   const updated = casosRepository.updateCase(caso_id, newCase);
 
   if (!updated) {
-    res.status(404).json({
+    return res.status(404).json({
       status: 404,
       message: "Parâmetros inválidos",
       errors: {
-        id: "O id enviado não corresponde a nenhum caso' ",
+         caso_id: "O id enviado não corresponde a nenhum caso' ",
       },
     });
   }
@@ -165,11 +164,11 @@ function updateCase(req, res) {
 
 function parcialUpdateCase(req, res) {
   const { caso_id } = req.params;
-  if (!isUuid(id)) {
+  if (!isUuid( caso_id)) {
     return res.status(400).json({
       status: 400,
       message: "ID inválido",
-      errors: { id: "O ID deve ser um UUID válido" },
+      errors: {  caso_id: "O ID deve ser um UUID válido" },
     });
   }
 
@@ -178,11 +177,11 @@ function parcialUpdateCase(req, res) {
   const updated = casosRepository.updateCase(caso_id, fields);
 
   if (!updated) {
-    res.status(404).json({
+    return res.status(404).json({
       status: 404,
       message: "Parâmetros inválidos",
       errors: {
-        id: "O id enviado não corresponde a nenhum caso' ",
+         caso_id: "O id enviado não corresponde a nenhum caso' ",
       },
     });
   }
@@ -192,21 +191,21 @@ function parcialUpdateCase(req, res) {
 
 function deleteCase(req, res) {
   const { caso_id } = req.params;
-  if (!isUuid(id)) {
+  if (!isUuid( caso_id)) {
     return res.status(400).json({
       status: 400,
       message: "ID inválido",
-      errors: { id: "O ID deve ser um UUID válido" },
+      errors: {  caso_id: "O ID deve ser um UUID válido" },
     });
   }
 
   const removed = casosRepository.deleteCase(caso_id);
   if (!removed) {
-    res.status(404).json({
+    return res.status(404).json({
       status: 404,
       message: "Parâmetros inválidos",
       errors: {
-        id: "O id enviado é invalido' ",
+         caso_id: "O caso não foi encontrado' ",
       },
     });
   }

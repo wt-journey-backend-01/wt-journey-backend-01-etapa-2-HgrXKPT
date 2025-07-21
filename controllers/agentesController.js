@@ -1,4 +1,5 @@
 const agentesRepository = require('../repositories/agentesRepository');
+const { parseISO, isValid, isFuture } = require('date-fns');
 
 
 function findAll(req, res){
@@ -34,12 +35,12 @@ function findById(req,res){
 
     const agente = agentesRepository.findAgentById(id);
     if(!agente){
-        res.status(404).json(
+        return res.status(404).json(
                     {
         status: 404,
         message: "Parâmetros inválidos",
         errors: {
-            "id" : "O id enviado é invalido' "
+            "id" : "O agente não foi encontrado"
         }     
         })
     }
@@ -62,6 +63,23 @@ function addAgente(req,res){
             },
         });
     }
+
+    const data = parseISO(dataDeIncorporacao);
+  if (!isValid(data)) {
+    return res.status(400).json({
+      status: 400,
+      message: "Data inválida",
+      errors: { dataDeIncorporacao: "Formato de data inválido, use YYYY-MM-DD" }
+    });
+  }
+
+  if (isFuture(data)) {
+    return res.status(400).json({
+      status: 400,
+      message: "Data inválida",
+      errors: { dataDeIncorporacao: "Data de incorporação não pode ser no futuro" }
+    });
+  }
 
     const newAgent={
         nome,
@@ -154,12 +172,12 @@ function deleteAgent(req,res) {
     const removed = agentesRepository.deleteAgent(id)
 
     if(!removed){
-        res.status(404).json(
+        return res.status(404).json(
                     {
         status: 404,
         message: "Parâmetros inválidos",
         errors: {
-            "id" : "O id enviado é invalido' "
+            "id" : "O agente não foi encontrado"
         }     
         })
     }

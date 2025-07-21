@@ -49,7 +49,7 @@ const casos = [
 
 }
 
-function createCases(caseData){
+function createCase(caseData){
 
      const newCase= {
         id: uuidv4(),
@@ -91,7 +91,7 @@ function deleteCase(id){
 module.exports = {
     findAll,
     findCaseById,
-    createCases,
+    createCase,
     updateCase,
     deleteCase
 }
