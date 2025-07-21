@@ -1,271 +1,267 @@
 <sup>Esse é um feedback gerado por IA, ele pode conter erros.</sup>
 
-Você tem 3 créditos restantes para usar o sistema de feedback AI.
+Você tem 2 créditos restantes para usar o sistema de feedback AI.
 
 # Feedback para HgrXKPT:
 
-Nota final: **66.4/100**
+Nota final: **27.4/100**
 
-Olá, HgrXKPT! 👋🚀
+# Feedback para você, HgrXKPT! 🚓✨
 
-Primeiramente, parabéns pelo empenho e dedicação no desenvolvimento da sua API para o Departamento de Polícia! 🎉 Você estruturou seu projeto com uma arquitetura modular bem organizada, separando rotas, controladores e repositórios, exatamente como esperado. Isso é fundamental para manter seu código limpo, escalável e fácil de manter. Além disso, você implementou todos os endpoints básicos para os recursos `/agentes` e `/casos`, com os métodos HTTP corretos, e fez um bom trabalho retornando os status codes adequados em várias operações. 👏
+Olá! Primeiro, quero parabenizar pelo esforço e pelo código que você já entregou! 🎉 Você estruturou seu projeto com as pastas de rotas, controllers e repositories, o que é fundamental para manter seu código organizado e escalável — isso já é um grande passo! Além disso, você conseguiu implementar a criação de agentes e casos, incluindo validações básicas de campos obrigatórios e tratamento de erros, o que mostra que você está no caminho certo. 👏
 
-Também notei que você conseguiu implementar as funcionalidades básicas de criação, leitura, atualização e exclusão para ambos os recursos, e suas mensagens de erro estão personalizadas, o que deixa a API mais amigável para quem a consumir. Isso é um diferencial! 💪
-
----
-
-### Vamos analisar alguns pontos para você evoluir ainda mais? 🕵️‍♂️🔍
+Também notei que você conseguiu entregar algumas funcionalidades bônus, como filtros nos endpoints e mensagens de erro personalizadas, o que é um diferencial e demonstra sua vontade de ir além. Muito legal! 🚀
 
 ---
 
-## 1. Validação de Dados — o coração da confiabilidade da API ❤️‍🔥
+## Vamos conversar sobre alguns pontos que podem te ajudar a destravar seu projeto e melhorar muito sua API! 🔍
 
-### O que observei:
+### 1. Validação de IDs UUID: atenção para o uso correto da variável!
 
-No seu código, especialmente nos controladores (`agentesController.js` e `casosController.js`), você já faz algumas validações básicas para campos obrigatórios, o que é ótimo! Por exemplo:
-
-```js
-if (!nome || !dataDeIncorporacao || !cargo){
-    return res.status(400).json({
-        status: 400,
-        message: `Parâmetros inválidos`,
-        errors: {
-            nome: !nome ? mensagemErro : undefined,
-            dataDeIncorporacao: !dataDeIncorporacao ? mensagemErro : undefined,
-            cargo: !cargo ? mensagemErro : undefined,
-        },
-    });
-}
-```
-
-Porém, percebi que algumas validações importantes ainda estão faltando ou incompletas, e isso gerou alguns problemas:
-
-- **Formato da data `dataDeIncorporacao`:** Você não está validando se a data está no formato correto `YYYY-MM-DD`. Isso permite que datas inválidas ou mal formatadas sejam aceitas, o que pode causar problemas futuros.
-
-- **Data no futuro:** Também não há checagem para impedir que a data de incorporação seja uma data futura, o que não faz sentido para esse contexto.
-
-- **Alteração do campo `id`:** Nos métodos de atualização (PUT e PATCH) para agentes, não está impedindo que o `id` seja alterado. Isso pode causar inconsistências, já que o `id` deve ser imutável.
-
-- **Validação do campo `status` no recurso `casos`:** Você fez uma validação para aceitar somente os valores `"aberto"` ou `"solucionado"`, o que está correto! Mas a forma como você retorna o erro poderia ser padronizada para ficar mais clara e consistente.
-
-- **Validação do `agente_id` nos casos:** Você está verificando se o `agente_id` existe, o que é ótimo! Só que no caso de ID inválido, você retorna erro 404, o que é correto, mas a mensagem poderia ser mais específica para facilitar o entendimento do usuário da API.
-
-### Por que isso é importante?
-
-Validar dados corretamente evita que sua API aceite informações erradas que podem quebrar funcionalidades ou deixar o sistema inconsistente. Além disso, ajuda a garantir que quem usa sua API saiba exatamente o que está errado quando enviar dados inválidos.
-
-### Como melhorar?
-
-Você pode usar bibliotecas como [Joi](https://joi.dev/) ou [Yup](https://github.com/jquense/yup) para facilitar a validação de dados, inclusive formatos de datas e valores permitidos. Mas se preferir, pode fazer validações manuais mais robustas.
-
-Exemplo simples para validar data no formato correto e impedir datas futuras:
+No seu controller de agentes e casos, você está usando a função `isUuid` para validar se o ID passado é um UUID válido, o que é ótimo! Porém, em vários lugares você está usando uma variável `id` que **não foi declarada ou extraída dos parâmetros**. Por exemplo, no arquivo `controllers/casosController.js`, na função `getCasoById`:
 
 ```js
-function isValidDate(dateString) {
-    // Regex para YYYY-MM-DD
-    const regex = /^\d{4}-\d{2}-\d{2}$/;
-    if (!regex.test(dateString)) return false;
-    const date = new Date(dateString);
-    if (Number.isNaN(date.getTime())) return false;
-    // Verifica se data não está no futuro
-    const now = new Date();
-    if (date > now) return false;
-    return true;
-}
-```
-
-No seu endpoint de criação ou atualização de agente, você pode usar essa função para validar o campo `dataDeIncorporacao` antes de aceitar o dado.
-
----
-
-## 2. Correção de alguns detalhes nos controladores
-
-### Mensagem de erro com variável não definida
-
-Notei que em alguns trechos você usa `mensagemErro` para descrever o erro, mas essa variável não está definida no seu código:
-
-```js
-errors: {
-    nome: !nome ? mensagemErro : undefined,
-    dataDeIncorporacao: !dataDeIncorporacao ? mensagemErro : undefined,
-    cargo: !cargo ? mensagemErro : undefined,
-},
-```
-
-Isso pode causar erros na execução. Você precisa definir essa variável ou substituir diretamente pela mensagem desejada, por exemplo:
-
-```js
-const mensagemErro = "Campo obrigatório não informado";
-
-errors: {
-    nome: !nome ? mensagemErro : undefined,
-    dataDeIncorporacao: !dataDeIncorporacao ? mensagemErro : undefined,
-    cargo: !cargo ? mensagemErro : undefined,
-},
-```
-
-Ou simplesmente:
-
-```js
-errors: {
-    nome: !nome ? "Campo obrigatório não informado" : undefined,
-    dataDeIncorporacao: !dataDeIncorporacao ? "Campo obrigatório não informado" : undefined,
-    cargo: !cargo ? "Campo obrigatório não informado" : undefined,
-},
-```
-
----
-
-## 3. Atualização dos recursos — impedir alteração do `id`
-
-No seu controller de agentes, as funções `updateAgent` e `partialUpdate` permitem que o campo `id` seja atualizado, o que não deve acontecer.
-
-Para evitar isso, você pode remover o `id` do objeto recebido antes de aplicar a atualização, assim:
-
-```js
-function updateAgent(req, res) {
-    const { id } = req.params;
-    const newAgent = { ...req.body };
-
-    // Impede alteração do id
-    if ('id' in newAgent) {
-        delete newAgent.id;
-    }
-
-    const updated = agentesRepository.updateAgents(id, newAgent);
-
-    if (!updated) {
-        return res.status(404).json({ message: `Agente não encontrado` });
-    }
-
-    res.status(200).json(updated);
-}
-```
-
-Faça o mesmo para o `partialUpdate`.
-
----
-
-## 4. IDs dos casos devem ser UUID válidos
-
-Você está usando UUID para os agentes, o que está perfeito. Porém, para os casos, o teste detectou que o ID não está sendo validado como UUID. No seu repositório `casosRepository.js` você gera IDs com `uuidv4()`, mas não há validação no momento de receber um ID para buscar, atualizar ou deletar um caso.
-
-Isso pode permitir que IDs inválidos sejam usados nas rotas, o que pode causar erros inesperados.
-
-**Sugestão:** Antes de buscar ou alterar um caso, valide se o ID recebido é um UUID válido. Você pode usar a própria biblioteca `uuid` para isso:
-
-```js
-const { validate: isUuid } = require('uuid');
-
 function getCasoById(req, res) {
-    const { id } = req.params;
+  const { agente_id } = req.query;
+  const { caso_id } = req.params;
 
-    if (!isUuid(id)) {
-        return res.status(400).json({
-            status: 400,
-            message: "ID inválido",
-            errors: { id: "O ID deve ser um UUID válido" }
-        });
-    }
-
-    const caso = casosRepository.findCaseById(id);
-    if (!caso) {
-        return res.status(404).json({
-            status: 404,
-            message: "Caso não encontrado",
-            errors: { id: "O ID enviado não corresponde a nenhum caso" }
-        });
-    }
-
-    res.status(200).json(caso);
+  if (!isUuid(id)) {  // <-- Aqui está o problema: 'id' não existe
+    return res.status(400).json({
+      status: 400,
+      message: "ID inválido",
+      errors: { id: "O ID deve ser um UUID válido" },
+    });
+  }
+  //...
 }
 ```
 
-Faça validações semelhantes nas outras funções que recebem o `id` do caso.
+Você deveria validar o `caso_id`, que vem dos parâmetros, e não uma variável `id` que não existe nesse contexto. Isso ocorre em várias funções, como `getAgenteAssocitateToCase`, `updateCase`, `parcialUpdateCase` e `deleteCase`. O mesmo acontece no controller de agentes, onde você às vezes valida `id` corretamente, mas em casos de inconsistência isso pode gerar erros.
 
----
-
-## 5. Falta de filtros e ordenações (Bônus)
-
-Você tentou implementar algumas funcionalidades extras, como filtragem por status, busca por agente responsável, ordenação por data, etc., mas elas ainda não estão funcionando corretamente.
-
-Isso indica que ainda falta implementar as rotas e controladores para esses filtros, ou que a lógica dentro deles não está completa.
-
-**Dica:** Comece implementando rotas que aceitem query params para filtros, por exemplo:
+**Como corrigir?** Troque `id` por `caso_id` ou `id` conforme o parâmetro que você extraiu do `req.params`. Por exemplo:
 
 ```js
-// Em routes/casosRoutes.js
-routes.get('/', casosController.getAllCasos);
-```
-
-E no controller:
-
-```js
-function getAllCasos(req, res) {
-    const { status, agente_id } = req.query;
-    let casos = casosRepository.findAll();
-
-    if (status) {
-        casos = casos.filter(c => c.status === status);
-    }
-    if (agente_id) {
-        casos = casos.filter(c => c.agente_id === agente_id);
-    }
-
-    res.status(200).json(casos);
+if (!isUuid(caso_id)) {
+  return res.status(400).json({
+    status: 400,
+    message: "ID inválido",
+    errors: { id: "O ID deve ser um UUID válido" },
+  });
 }
 ```
 
-Assim você vai entregando mais valor para sua API e deixando ela mais completa.
+Esse ajuste simples vai garantir que a validação funcione e que você retorne o erro 400 corretamente quando o ID for inválido.
 
 ---
 
-## 6. Organização do projeto
+### 2. Controle do fluxo após respostas de erro: cuidado com múltiplos `res.status` na mesma função
 
-Sua estrutura de diretórios está muito boa e segue o padrão esperado! 👏
+Em algumas funções, você retorna um erro com `res.status(...).json(...)`, mas depois o código continua executando e tenta enviar outra resposta. Isso causa erros no Express porque você só pode enviar uma resposta por requisição.
+
+Exemplo no `findById` do `agentesController.js`:
+
+```js
+if (!agente) {
+  res.status(404).json({
+    status: 404,
+    message: "Parâmetros inválidos",
+    errors: { id: "O id enviado é invalido' " }
+  })
+}
+// Aqui o código continua e tenta enviar outra resposta:
+res.status(200).json(agente)
+```
+
+Se o agente não for encontrado, você envia o 404, mas não retorna da função, então o Express tenta enviar um 200 logo em seguida, gerando conflito.
+
+**Como corrigir?** Sempre que enviar uma resposta de erro, faça um `return` para interromper a execução da função:
+
+```js
+if (!agente) {
+  return res.status(404).json({
+    status: 404,
+    message: "Parâmetros inválidos",
+    errors: { id: "O id enviado é invalido' " }
+  });
+}
+```
+
+Isso garante que o fluxo pare ali e não haja tentativas de enviar múltiplas respostas.
+
+---
+
+### 3. Validação de datas no campo `dataDeIncorporacao` dos agentes
+
+Notei que você aceita qualquer valor para `dataDeIncorporacao`, sem validar o formato ou se a data está no futuro. Isso foi apontado na penalidade, e é importante porque datas inválidas ou futuras não fazem sentido para o seu sistema.
+
+Por exemplo, no `addAgente`:
+
+```js
+const {nome, dataDeIncorporacao, cargo} = req.body;
+
+if (!nome || !dataDeIncorporacao || !cargo){
+  return res.status(400).json({ ... });
+}
+
+// Aqui você cria o agente sem validar a data:
+const newAgent = { nome, dataDeIncorporacao, cargo };
+```
+
+**Como melhorar?** Você pode usar uma biblioteca como `date-fns` (que já está instalada no seu projeto!) para validar o formato da data e garantir que não seja futura.
+
+Exemplo simples usando `date-fns`:
+
+```js
+const { parseISO, isValid, isFuture } = require('date-fns');
+
+function addAgente(req, res) {
+  const { nome, dataDeIncorporacao, cargo } = req.body;
+
+  if (!nome || !dataDeIncorporacao || !cargo) {
+    return res.status(400).json({ ... });
+  }
+
+  const data = parseISO(dataDeIncorporacao);
+  if (!isValid(data)) {
+    return res.status(400).json({
+      status: 400,
+      message: "Data inválida",
+      errors: { dataDeIncorporacao: "Formato de data inválido, use YYYY-MM-DD" }
+    });
+  }
+
+  if (isFuture(data)) {
+    return res.status(400).json({
+      status: 400,
+      message: "Data inválida",
+      errors: { dataDeIncorporacao: "Data de incorporação não pode ser no futuro" }
+    });
+  }
+
+  // Se passar, cria o agente normalmente
+  const newAgent = { nome, dataDeIncorporacao, cargo };
+  const agent = agentesRepository.createAgent(newAgent);
+  res.status(201).json(agent);
+}
+```
+
+Assim, você evita registros com datas estranhas e mantém a integridade dos dados.
+
+Recomendo assistir este vídeo para entender melhor validação de dados em APIs Node.js/Express:  
+https://youtu.be/yNDCRAz7CM8?si=Lh5u3j27j_a4w3A_
+
+---
+
+### 4. Consistência no uso dos nomes dos métodos nos controllers e repositories
+
+No seu `casosController.js`, você chama a função `casosRepository.createCases(newCase);` (note o plural `createCases`), mas no repositório ela está declarada como:
+
+```js
+function createCases(caseData) {
+  // ...
+}
+```
+
+O nome está no plural, o que pode confundir, já que você está criando apenas um caso por vez.
+
+**Sugestão:** Use nomes no singular para criar um único recurso, como `createCase`.
+
+Além disso, no seu controller você cria o objeto `newCase` e passa para o repositório, mas não captura o retorno da função, que é o novo caso com o ID gerado. Isso faz com que você retorne o objeto antigo, sem o ID.
+
+```js
+const newCase = { titulo, descricao, status, agente_id };
+casosRepository.createCases(newCase); // não captura retorno
+
+res.status(201).json(newCase); // retorna objeto sem ID
+```
+
+**Como corrigir:**
+
+```js
+const newCase = { titulo, descricao, status, agente_id };
+const createdCase = casosRepository.createCases(newCase);
+
+res.status(201).json(createdCase);
+```
+
+Isso garante que você retorne o objeto com o ID gerado, conforme esperado.
+
+---
+
+### 5. Organização dos arquivos e arquitetura do projeto
+
+Sua estrutura de arquivos está muito próxima do esperado, parabéns! 🎉
 
 ```
 .
 ├── controllers/
 ├── repositories/
 ├── routes/
-├── utils/
-├── docs/
-├── package.json
 ├── server.js
+├── package.json
+├── utils/
+└── docs/
 ```
 
-Isso mostra que você compreende bem a importância da arquitetura MVC e modularização.
+Só fique atento para que os nomes dos arquivos estejam exatamente como esperado (`agentesRoutes.js`, `casosRoutes.js`, etc.) e que o arquivo `.env` esteja presente para definir a porta (você está usando `process.env.PORT` no `server.js`).
 
 ---
 
-## Recursos para te ajudar a aprimorar ainda mais
+### 6. Pequenos detalhes que fazem diferença
 
-- [Express.js - Guia de Roteamento](https://expressjs.com/pt-br/guide/routing.html)  
-- [Validação de dados em APIs Node.js/Express (vídeo)](https://youtu.be/yNDCRAz7CM8?si=Lh5u3j27j_a4w3A_)  
-- [Status HTTP 400 - Bad Request (MDN)](https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status/400)  
-- [Status HTTP 404 - Not Found (MDN)](https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status/404)  
-- [Manipulação de arrays em JavaScript (vídeo)](https://youtu.be/glSgUKA5LjE?si=t9G2NsC8InYAU9cI)  
-- [Arquitetura MVC em Node.js (vídeo)](https://youtu.be/bGN_xNc4A1k?si=Nj38J_8RpgsdQ-QH)  
+- No seu controller de agentes, você usa a função `isUuid` para validar IDs, mas não importou ela na maioria dos arquivos. Certifique-se de importar:
+
+```js
+const { validate: isUuid } = require('uuid');
+```
+
+- Em algumas respostas de erro, a mensagem tem um apóstrofo sobrando, por exemplo:
+
+```json
+"errors": {
+  "id" : "O id enviado é invalido' "
+}
+```
+
+Remova esse apóstrofo para deixar a mensagem mais profissional.
+
+- Em `getAgenteAssocitateToCase` (casosController), você tem um `console.log` que pode ser removido para limpar o código.
 
 ---
 
-## Resumo dos principais pontos para focar 👇
+## Recursos para você continuar evoluindo:
 
-- **Validação mais robusta dos dados de entrada:** especialmente formato e validade da data, e impedir datas futuras.
-- **Impedir alteração do campo `id` nos updates (PUT e PATCH).**
-- **Validar IDs recebidos para casos e agentes, garantindo que sejam UUID válidos.**
-- **Corrigir uso da variável `mensagemErro` que não está definida.**
-- **Implementar filtros e ordenações para os recursos, entregando funcionalidades bônus.**
-- **Padronizar e melhorar mensagens de erro para facilitar o entendimento.**
+- **Express.js e Roteamento**:  
+  https://expressjs.com/pt-br/guide/routing.html
+
+- **Validação de dados em APIs Node.js/Express**:  
+  https://youtu.be/yNDCRAz7CM8?si=Lh5u3j27j_a4w3A_
+
+- **Manipulação de Arrays em JavaScript** (para filtros e buscas):  
+  https://youtu.be/glSgUKA5LjE?si=t9G2NsC8InYAU9cI
+
+- **Fundamentos de API REST e Express.js** (para reforçar conceitos):  
+  https://youtu.be/RSZHvQomeKE
 
 ---
 
-HgrXKPT, seu trabalho já está muito bom e com algumas melhorias você vai deixar sua API ainda mais profissional e robusta! Continue se dedicando, revisando seu código e testando suas rotas. Você está no caminho certo! 🚀✨
+## 📋 Resumo dos principais pontos para focar:
 
-Se precisar, volte aos vídeos indicados para reforçar os conceitos e não hesite em experimentar as dicas aqui para aprimorar sua API.
+- Corrigir o uso das variáveis de ID nas validações (`id` vs `caso_id` vs `agente_id`) para garantir que a validação de UUID funcione corretamente.
+- Sempre usar `return` após enviar uma resposta de erro para evitar múltiplos envios de resposta.
+- Validar o formato e a validade da data `dataDeIncorporacao` usando `date-fns` para evitar datas inválidas ou futuras.
+- Ajustar nomes de funções para maior clareza (ex: `createCase` no singular) e capturar o retorno correto do repositório para enviar o objeto com ID.
+- Importar corretamente a função `isUuid` em todos os controllers que fazem validação de ID.
+- Polir mensagens de erro para remover caracteres estranhos e manter a profissionalidade.
+- Remover logs desnecessários do código para deixá-lo mais limpo.
 
-Boa sorte e até a próxima revisão! 👊😄
+---
+
+Você já está fazendo um ótimo trabalho, e com esses ajustes seu código vai ficar muito mais robusto e alinhado com as expectativas! Continue firme que você está no caminho certo para dominar a construção de APIs REST com Node.js e Express! 🚀💙
+
+Qualquer dúvida, estarei por aqui para ajudar! 😉
+
+Abraço e bons códigos! 👊✨
 
 > Caso queira tirar uma dúvida específica, entre em contato com o Chapter no nosso [discord](https://discord.gg/DryuHVnz).
 
