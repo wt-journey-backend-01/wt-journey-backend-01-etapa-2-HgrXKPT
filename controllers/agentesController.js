@@ -1,12 +1,37 @@
-const agentesRepository = require('../repositories/agentesRepository')
+const agentesRepository = require('../repositories/agentesRepository');
+
 
 function findAll(req, res){
-    const agentes = agentesRepository.findAll()
+    const { cargo, sort } = req.query;
+    let agentes = agentesRepository.findAll()
+
+    if(cargo){
+        agentes = agentes.filter(a => a.cargo.toLowerCase().includes(cargo.toLowerCase()))
+    }
+
+    
+    if (sort === "dataDeIncorporacao") {
+
+        agentes.sort((a, b) => new Date(a.dataDeIncorporacao).getTime() - new Date(b.dataDeIncorporacao).getTime());
+
+    } else if (sort === '-dataDeIncorporacao') {
+        agentes.sort((a, b) => new Date(b.dataDeIncorporacao) - new Date(a.dataDeIncorporacao));
+    }
+
+
     res.status(200).json(agentes)
 }
 
 function findById(req,res){
     const {id} = req.params;
+     if (!isUuid(id)) {
+        return res.status(400).json({
+            status: 400,
+            message: "ID inválido",
+            errors: { id: "O ID deve ser um UUID válido" }
+        });
+    }
+
     const agente = agentesRepository.findAgentById(id);
     if(!agente){
         res.status(404).json(
@@ -31,9 +56,9 @@ function addAgente(req,res){
             status: 400,
             message: `Parâmetros inválidos`,
             errors: {
-                nome: !nome ? mensagemErro : undefined,
-                dataDeIncorporacao: !dataDeIncorporacao ? mensagemErro : undefined,
-                cargo: !cargo ? mensagemErro : undefined,
+                nome: !nome ? "Campo obrigatório não informado" : undefined,
+                dataDeIncorporacao: !dataDeIncorporacao ? "Campo obrigatório não informado" : undefined,
+                cargo: !cargo ? "Campo obrigatório não informado" : undefined,
             },
         });
     }
@@ -49,15 +74,33 @@ function addAgente(req,res){
 }
 
  function updateAgent(req,res){
-
      const {id} = req.params;
-    const newAgent = req.body;
+      if (!isUuid(id)) {
+        return res.status(400).json({
+            status: 400,
+            message: "ID inválido",
+            errors: { id: "O ID deve ser um UUID válido" }
+        });
+    }
+
+    const {nome, dataDeIncorporacao, cargo} = req.body;
+
+
+    const newAgent = {
+        nome,
+        dataDeIncorporacao,
+        cargo
+    }
 
     const updated = agentesRepository.updateAgents(id, newAgent)
 
-    if (!updated){
-        return res.status(404).json({message:`Agente não encontrado`});
-    }
+   if (!updated){
+        return res.status(404).json({ 
+            status: 404,
+            message: "Agente não encontrado",
+            errors: { id: "O id do agente fornecido é invalido" }
+        });
+    };
 
     res.status(200).json(updated);
    
@@ -66,13 +109,32 @@ function addAgente(req,res){
 function partialUpdate(req,res){
 
      const {id} = req.params;
-    const fields = req.body;
+      if (!isUuid(id)) {
+        return res.status(400).json({
+            status: 400,
+            message: "ID inválido",
+            errors: { id: "O ID deve ser um UUID válido" }
+        });
+    }
+
+    const {nome, dataDeIncorporacao, cargo} = req.body;
+
+    const fields = {
+        nome,
+        dataDeIncorporacao,
+        cargo
+    }
 
     const updated = agentesRepository.updateAgents(id, fields)
 
     if (!updated){
-        return res.status(404).json({message:`Agente não encontrado`});
-    }
+        return res.status(404).json({ 
+            status: 404,
+            message: "Agente não encontrado",
+            errors: { id: "O id do agente fornecido é invalido" }
+        });
+    };
+    
 
     res.status(200).json(updated);
 
@@ -81,6 +143,14 @@ function partialUpdate(req,res){
 
 function deleteAgent(req,res) {
     const {id} = req.params;
+     if (!isUuid(id)) {
+        return res.status(400).json({
+            status: 400,
+            message: "ID inválido",
+            errors: { id: "O ID deve ser um UUID válido" }
+        });
+    }
+
     const removed = agentesRepository.deleteAgent(id)
 
     if(!removed){

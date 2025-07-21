@@ -4,16 +4,19 @@ const casosController = require('../controllers/casosController')
 
 routes.get('/', casosController.getAllCasos);
 
+routes.get('/:caso_id/agente', casosController.getAgenteAssocitateToCase)
 
-routes.get('/:id', casosController.getCasoById)
+routes.get('/:caso_id', casosController.getCasoById)
+
+
 
 routes.post('/', casosController.createCase)
 
-routes.put('/:id', casosController.updateCase)
+routes.put('/:caso_id', casosController.updateCase)
 
-routes.patch('/:id', casosController.parcialUpdateCase)
+routes.patch('/:caso_id', casosController.parcialUpdateCase)
 
-routes.delete('/:id', casosController.deleteCase)
+routes.delete('/:caso_id', casosController.deleteCase)
 
 
 module.exports = routes;
