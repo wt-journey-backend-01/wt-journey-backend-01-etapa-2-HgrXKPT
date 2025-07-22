@@ -44,9 +44,9 @@ function findById(req, res) {
   if (!agente) {
     return res.status(404).json({
       status: 404,
-      message: "Parâmetros inválidos",
+      message: "Agente não encontrado",
       errors: {
-        id: "O agente não foi encontrado",
+        id: "Nenhum agente encontrado com o ID fornecido",
       },
     });
   };

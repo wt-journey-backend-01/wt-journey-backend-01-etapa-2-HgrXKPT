@@ -38,8 +38,7 @@ function getCasoById(req, res) {
       errors: { caso_id: "O ID deve ser um UUID válido" },
     });
   }
-
-
+  
   let caso = casosRepository.findCaseById(caso_id);
 
   if (!caso) {
@@ -183,7 +182,7 @@ function updateCase(req, res) {
       status: 404,
       message: "Caso não encontrado",
       errors: {
-        caso_id: "O id enviado não corresponde a nenhum caso",
+        caso_id: "Nenhum caso encontrado com o ID fornecido",
       },
     });
   };
@@ -216,6 +215,18 @@ function parcialUpdateCase(req, res) {
     });
   }
 
+  const existingCase = casosRepository.findCaseById(caso_id);
+  if (!existingCase) {
+    return res.status(404).json({
+      status: 404,
+      message: "Caso não encontrado",
+      errors: {
+        caso_id: "Nenhum caso encontrado com o ID fornecido",
+      },
+    });
+  };
+
+
   if (
     fields.status &&
     fields.status !== `aberto` &&
@@ -242,16 +253,7 @@ function parcialUpdateCase(req, res) {
     }
   };
 
-  const existingCase = casosRepository.findCaseById(caso_id);
-  if (!existingCase) {
-    return res.status(404).json({
-      status: 404,
-      message: "Parâmetros inválidos",
-      errors: {
-        caso_id: "O id enviado não corresponde a nenhum caso",
-      },
-    });
-  };
+ 
 
   const updated = casosRepository.updateCase(caso_id, fields);
 
