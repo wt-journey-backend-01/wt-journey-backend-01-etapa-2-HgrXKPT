@@ -49,7 +49,7 @@ function findById(req, res) {
         id: "O agente não foi encontrado",
       },
     });
-  }
+  };
 
   res.status(200).json(agente);
 }
@@ -164,7 +164,7 @@ function updateAgent(req, res) {
       message: "Agente não encontrado",
       errors: { id: "O id do agente fornecido é invalido" },
     });
-  }
+  };
 
   res.status(200).json(updated);
 }
@@ -215,7 +215,7 @@ function partialUpdate(req, res) {
         id: "O agente não foi encontrado"
       }
     });
-  }
+  };
 
   const fields = {};
   if (value.nome !== undefined) fields.nome = value.nome;
@@ -247,7 +247,7 @@ function deleteAgent(req, res) {
         id: "O agente não foi encontrado",
       },
     });
-  }
+  };
 
   res.status(204).send();
 }
