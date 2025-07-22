@@ -31,14 +31,7 @@ function getCasoById(req, res) {
 
   const { caso_id } = req.params;
 
-  if (!isUuid(caso_id)) {
-    return res.status(400).json({
-      status: 400,
-      message: "ID inválido",
-      errors: { caso_id: "O ID deve ser um UUID válido" },
-    });
-  }
-  
+
   let caso = casosRepository.findCaseById(caso_id);
 
   if (!caso) {
