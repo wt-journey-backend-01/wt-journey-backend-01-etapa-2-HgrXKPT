@@ -31,7 +31,6 @@ function getCasoById(req, res) {
 
   const { caso_id } = req.params;
 
-
   let caso = casosRepository.findCaseById(caso_id);
 
   if (!caso) {
@@ -154,21 +153,6 @@ function updateCase(req, res) {
     });
   }
 
-  if (!isUuid(caso_id)) {
-    return res.status(400).json({
-      status: 400,
-      message: "ID inválido",
-      errors: { caso_id: "O ID deve ser um UUID válido" }
-    });
-  }
-
-  if (value.id && value.id !== caso_id) {
-    return res.status(400).json({
-      status: 400,
-      message: "Não é permitido alterar o campo 'id'.",
-    });
-  }
-
   const existingCase = casosRepository.findCaseById(caso_id);
   if (!existingCase) {
     return res.status(404).json({
@@ -179,6 +163,15 @@ function updateCase(req, res) {
       },
     });
   };
+
+  if (value.id && value.id !== caso_id) {
+    return res.status(400).json({
+      status: 400,
+      message: "Não é permitido alterar o campo 'id'.",
+    });
+  }
+
+  
 
   if (value.agente_id) {
     const agentExists = agentesRepository.findAgentById(value.agente_id);
@@ -199,14 +192,6 @@ function parcialUpdateCase(req, res) {
   const { caso_id } = req.params;
 
   const fields = req.body;
-
-  if (!isUuid(caso_id)) {
-    return res.status(400).json({
-      status: 400,
-      message: "ID inválido",
-      errors: { caso_id: "O ID deve ser um UUID válido" },
-    });
-  }
 
   const existingCase = casosRepository.findCaseById(caso_id);
   if (!existingCase) {

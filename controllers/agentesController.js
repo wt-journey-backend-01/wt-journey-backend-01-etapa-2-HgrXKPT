@@ -32,13 +32,6 @@ function findAll(req, res) {
 
 function findById(req, res) {
   const { id } = req.params;
-  if (!isUuid(id)) {
-    return res.status(400).json({
-      status: 400,
-      message: "ID inválido",
-      errors: { id: "O ID deve ser um UUID válido" },
-    });
-  }
 
   const agente = agentesRepository.findAgentById(id);
   if (!agente) {
