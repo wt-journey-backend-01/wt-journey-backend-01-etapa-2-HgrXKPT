@@ -212,8 +212,8 @@ function partialUpdate(req, res) {
       status: 404,
       message: "Agente não encontrado",
       errors: {
-        id: "O agente não foi encontrado",
-      },
+        id: "O agente não foi encontrado"
+      }
     });
   }
 
