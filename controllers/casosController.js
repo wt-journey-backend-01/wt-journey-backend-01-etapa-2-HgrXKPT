@@ -184,6 +184,7 @@ function updateCase(req, res) {
     }
   };
 
+
   const updated = casosRepository.updateCase(caso_id, value);
   res.status(200).json(updated);
 }
